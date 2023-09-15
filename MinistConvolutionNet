@@ -1,8 +1,14 @@
 # example of loading the mnist dataset
-from tensorflow.keras.datasets import mnist
+import tensorflow_datasets as tfds
 from matplotlib import pyplot as plt
 # load dataset
-(trainX, trainy), (testX, testy) = mnist.load_data()
+(train, test) = tfds.load(
+ 'mnist'
+ split=['train', 'test'],
+    shuffle_files=True,
+    as_supervised=True,
+    with_info=True,
+)
 # summarize loaded dataset
 print('Train: X=%s, y=%s' % (trainX.shape, trainy.shape))
 print('Test: X=%s, y=%s' % (testX.shape, testy.shape))
@@ -19,3 +25,4 @@ trainX=(60000, 28, 28)
 trainy=(60000,)
 testX=(10000, 28, 28)
 testy=(10000,)
+
