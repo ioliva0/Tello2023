@@ -1,0 +1,14 @@
+[project]
+name = "Animus_Ferus_Blue_Tello_2023"
+version = "0"
+authors = [
+    {name = "Ryan"},
+    {name = "Jessie"},
+    {name = "Ian"}
+]
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = []
+
+[project.urls]
+"Homepage" = "https://github.com/ioliva0/Tello2023"

@@ -1,6 +1,6 @@
 from time import sleep 
 
-import Utils.Version1.Tello as Tello
+from .Utils.Version1 import Tello as Tello
 
 drone = Tello.Tello()
 
