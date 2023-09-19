@@ -1,6 +1,6 @@
-import Utils.Version2.Tello as Tello
+import Utils.Version1.Tello as Tello
 
-import Utils.Version2.TelloUI as TelloUI
+import Utils.Version1.TelloUI as TelloUI
 
 def main():
 
