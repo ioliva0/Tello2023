@@ -110,9 +110,7 @@ class TelloUI(object):
 
         """       
 
-        self.quit_waiting_flag = True        
-
-   
+        self.quit_waiting_flag = True          
 
     def openCmdWindow(self):
 
