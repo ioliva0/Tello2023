@@ -8,9 +8,12 @@ tello.connect()
 
 print(str(tello.get_battery()) + "% Battery")
 
-print("taking off")
-tello.takeoff()
+try:
+    print("taking off")
+    tello.takeoff()
 
-hover(tello, 15)
+    hover(tello, 15)
 
-tello.land()
+    tello.land()
+except KeyboardInterrupt:
+    tello.land()

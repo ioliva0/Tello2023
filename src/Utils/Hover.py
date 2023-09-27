@@ -14,15 +14,14 @@ def wait(length):
     print("Ending hover...")
 
 
-def hover(tello, time, sim=False):
-    timer = Thread(target=wait(time))
-
-    if sim:
-        sleep(time)
-        return
+def hover(tello, time):
+    timer = Thread(target=wait, args=[time])
     
+    timer.start()
+
     while timer.is_alive():
+        #print("waiting...",end="\r")
         tello.send_keepalive()
 
 if __name__ == "__main__":
-    hover(None, 10, True)
+    hover(None, 10)
