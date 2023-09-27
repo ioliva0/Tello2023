@@ -15,5 +15,5 @@ try:
     hover(tello, 15)
 
     tello.land()
-except KeyboardInterrupt:
+except:
     tello.land()
