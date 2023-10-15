@@ -10,8 +10,8 @@ tello.streamon()
 
 window = "stream"
 
-starting_image = cv2.imread("/Users/ioliva/Tello/Tello2023/picture.png")
-cv2.imshow(window, starting_image)
+#starting_image = cv2.imread("/Users/jwang/Tello/Tello2023/picture.png")
+#cv2.imshow(window, starting_image)
 
 while True:
     try:
