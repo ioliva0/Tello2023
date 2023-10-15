@@ -1,28 +1,49 @@
+## training MNIST Conv Net
+
 # example of loading the mnist dataset
 import tensorflow_datasets as tfds
 from matplotlib import pyplot as plt
+import tensorflow as tf
+
 # load dataset
-(train, test) = tfds.load(
- 'mnist'
- split=['train', 'test'],
-    shuffle_files=True,
-    as_supervised=True,
-    with_info=True,
+(train, test), info = tfds.load('mnist', split=['train', 'test'], shuffle_files=True, as_supervised=True, with_info=True)
+
+
+# build training pipeline
+def normalize_img(image, label):
+  """Normalizes images: `uint8` -> `float32`."""
+  return tf.cast(image, tf.float32) / 255., label
+
+train = train.map(
+    normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
+train = train.cache()
+train = train.shuffle(info.splits['train'].num_examples)
+train = train.batch(128)
+train = train.prefetch(tf.data.AUTOTUNE)
+
+# build an evolution pipeline 
+test = test.map(
+    normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
+test = test.batch(128)
+test = test.cache()
+test = test.prefetch(tf.data.AUTOTUNE)
+
+# create and train the model 
+model = tf.keras.models.Sequential([
+  tf.keras.layers.Flatten(input_shape=(28, 28)),
+  tf.keras.layers.Dense(128, activation='relu'),
+  tf.keras.layers.Dense(10)
+])
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(0.001),
+    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
 )
-# summarize loaded dataset
-print('Train: X=%s, y=%s' % (trainX.shape, trainy.shape))
-print('Test: X=%s, y=%s' % (testX.shape, testy.shape))
-# plot first few images
-for i in range(9):
- # define subplot
- plt.subplot(330 + 1 + i)
- # plot raw pixel data
- plt.imshow(trainX[i], cmap=plt.get_cmap('gray'))
-# show the figure
-plt.show()
 
-trainX=(60000, 28, 28)
-trainy=(60000,)
-testX=(10000, 28, 28)
-testy=(10000,)
+model.fit(
+    train,
+    epochs=6,
+    validation_data=test,
+)
 
+# load Camera image into ConvNet 
