@@ -134,26 +134,43 @@ def find_path(waypoints, startI, endI):
 
     print()
 
-    process_path(waypoints, shortest_path)
+    return process_path(waypoints, shortest_path)
 
 def process_path(waypoints, shortest_path):
     processed_path = []
     for i, point in enumerate(shortest_path):
-        processed_path.append(waypoints[point])
+        processed_path.append(waypoints[point].copy())
+        
         if i != 0:
+            print(waypoints[shortest_path[i - 1]])
+            print(processed_path[-1])
+            print()
             for j in range(3):
-                processed_path[-1][j] -= processed_path[-2][j]
-    
+                processed_path[-1][j] -= waypoints[shortest_path[i - 1]][j]
+        
     return processed_path
+
 
 #run a test if the Pathfinder script is run directly
 #(as opposed to being imported into a different script)
 if __name__ == "__main__":
     
-    print(find_path([[5, 2, 1], [0,0,0], [2,3,2], [1,1,1]], 0, 1))
-
-    #permutations = find_permutations([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    points = find_path([
+        [100, 50, 20], 
+        [0,0,0], 
+        [200,80,30], 
+        [60,60,60]
+        ], 0, 1)
     
-    #print(permutations)
+    from djitellopy import tello, Tello
 
-    
+    tello = Tello()
+
+    tello.connect()
+
+    print(str(tello.get_battery()) + "% Battery")
+
+    tello.takeoff()
+
+    for point in points:
+        tello.go_xyz_speed(point[0], point[1], point[2], 50)
