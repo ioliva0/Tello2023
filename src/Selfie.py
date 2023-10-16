@@ -7,11 +7,9 @@ tello.connect()
 
 tello.streamon()
 
-tello.takeoff()
+#tello.takeoff()
 
 window = "stream"
-
-arucoTags = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
 
 starting_image = cv2.imread("/Users/ioliva/Tello/Tello2023/picture.png")
 cv2.imshow(window, starting_image)
