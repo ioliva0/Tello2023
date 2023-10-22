@@ -40,9 +40,9 @@ while True:
                 print(i+1)
                 print(ids[0][0])
                 if i % 2 == 0:
-                    tello.flip_forward()
-                else:
                     tello.flip_back()
+                else:
+                    tello.flip_forward()
                 #sleep(1)
             tello.land()
     except KeyboardInterrupt:
