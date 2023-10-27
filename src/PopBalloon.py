@@ -18,8 +18,8 @@ try:
     sleep(5)
     tello.send_keepalive()
 
-    tello.go_xyz_speed(100, 0, 0, 100)
-    tello.go_xyz_speed(-100, 0, 0, 100)
+    tello.move_forward(200)
+    tello.move_back(200)
 
     tello.land()
 except:

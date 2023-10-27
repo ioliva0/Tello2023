@@ -13,9 +13,6 @@ tello.takeoff()
 
 window = "stream"
 
-min_hsv = (70, 120, 50)
-max_hsv = (100, 255, 255)
-
 while True:
     try:
         tello.send_keepalive()
@@ -47,9 +44,9 @@ while True:
             x = randint(0, 599)
             y = randint(0, 336)
 
-            redSamples += red[y][x]
-            greenSamples += green[y][x]
-            blueSamples += blue[y][x]
+            redSamples += red[y][x] / 255
+            greenSamples += green[y][x] / 255
+            blueSamples += blue[y][x] / 255
 
         maxSamples = max(redSamples, greenSamples, blueSamples)
         if maxSamples >= thresh:

@@ -1,12 +1,11 @@
 from djitellopy import tello, Tello
 import cv2
-from Utils.Hover import hover
 
 tello = Tello()
 
 tello.connect()
 tello.takeoff()
-#tello.streamon()
+tello.streamon()
 
 def draw_num(tagNum):
     print("############")
@@ -53,7 +52,6 @@ def draw_num(tagNum):
 
 # Create a window for the video stream
 window = "Tello Stream"
-cv2.namedWindow(window)
 
 # Define the ArUco dictionary
 arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
@@ -71,7 +69,9 @@ while True:
         true_image = cv2.cvtColor(tello_image, cv2.COLOR_BGR2RGB)
 
         # Detect ArUco markers in the image
-        corners, ids, rejected = arucoDetector.detectMarkers(true_image)
+        corners, ids, rejected = arucoDetector.detectMarkers(tello_image)
+
+        cv2.imshow('Frame', tello_image)
 
         # If ArUco markers are detected, print their IDs
         if ids is not None:
@@ -84,5 +84,7 @@ while True:
         tello.land()
         print("Terminating...")
         break
+
+
 
 tello.land()
