@@ -5,6 +5,7 @@ import tensorflow_datasets as tfds
 from matplotlib import pyplot as plt
 import tensorflow as tf
 
+
 # load dataset
 (train, test), info = tfds.load('mnist', split=['train', 'test'], shuffle_files=True, as_supervised=True, with_info=True)
 
@@ -46,7 +47,6 @@ model.fit(
     epochs=6,
     validation_data=test,
 )
-
 
 # Save the weights
 model.save("IanIsTheBest.h5")

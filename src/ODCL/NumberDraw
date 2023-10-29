@@ -1,0 +1,132 @@
+import cv2
+import numpy as np
+import tensorflow as tf
+from djitellopy import Tello, tello
+from time import sleep
+
+
+## below code to identify numbers in a video feed. 
+## Need add preprocess the image before submitting it for prediction. 
+
+# Load the model
+model = tf.keras.models.load_model('IanIsTheBest.h5')
+
+# Create a Tello instance
+tello = Tello()
+
+# Connect to the Tello and start the video stream
+tello.connect()
+tello.streamon()
+tello.takeoff()
+
+# Create a window for the video stream
+window = "Tello Stream"
+cv2.namedWindow(window)
+
+def preprocess_image(img):
+    # call convertScaleAbs function
+    #img_resized = imutils.resize(scaleAbs, height = 28, width = 28)
+    img_resized = cv2.resize(img, (28,28))  
+
+    # change brightness
+    for row in range(len(img_resized)):
+        for column in range(len(img_resized[row])):
+            if img_resized[row][column] > 130: 
+                img_resized[row][column] = 0
+            else: 
+                img_resized[row][column] = 255
+
+    # crop image to 28x28
+    center = int(len(img_resized[0])/2)
+    img_resized = img_resized[0 : 28, center-14 : center+14]
+
+    img_reshaped = img_resized.reshape((1, 28, 28, 1))
+
+
+    return img_reshaped
+
+    '''# Load image, convert to grayscale and resize to 28x28 pixels
+    img = cv2.resize(img, (28, 28))
+    # Invert colors to make white numbers on a black background
+    img = img.eval(img, lambda x: 255 - x)
+    # Convert image data to numpy array and normalize
+    img_array = np.asarray(img) / 255.0
+    # return processed_img
+    return img_array'''
+
+# Initialize the video capture
+#cap = cv2.VideoCapture(0)
+
+while True:
+    frame = tello.get_frame_read().frame
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    # Preprocess the current frame
+    image_data = preprocess_image(frame)
+
+    # Make prediction
+    prediction = model.predict(image_data)
+    predicted_digit = np.argmax(prediction)
+
+    # Display the prediction on the video feed
+    print("Predicted Digit: " + str(predicted_digit))
+    
+    '''
+    # draw number 
+    match predicted_digit: 
+        case 0:
+            tello.curve_xyz_speed(-50, -50, 0, -100, 0, 0, 50)
+            tello.curve_xyz_speed(50, 50, 0, 100, 0, 0, 50)
+        case 1:
+            tello.go_xyz_speed(-100, 0, 0, 50)
+        case 2:
+            tello.curve_xyz_speed(-50, -50, 0, -100, 0, 0, 50)
+            tello.go_xyz_speed(0, -100, 0, 50)
+        case 3:
+            sleep(1)
+            tello.curve_xyz_speed(-50, -50, 0, -100, 0, 0, 50)
+            sleep(1)
+            tello.curve_xyz_speed(-50, -50, 0, -100, 0, 0, 50)
+            tello.land()
+        case 4:
+            tello.go_xyz_speed(-50, 50, 0, 50)
+            tello.go_xyz_speed(0, -50, 0, 50)
+            tello.go_xyz_speed(-50, 0, 0, 50)
+            tello.go_xyz_speed(100, 0, 0, 50)
+        case 5:
+            tello.go_xyz_speed(0, 50, 0, 50)
+            tello.go_xyz_speed(-50, 0, 0, 50)
+            tello.curve_xyz_speed(-50, -50, 0, -100, 0, 0, 50)
+        case 6:
+            sleep(1)
+            tello.curve_xyz_speed(-100, 100, 0, -200, 0, 0, 50)
+            sleep(1)
+            tello.curve_xyz_speed(50, -50, 0, 100, 0, 0, 50)
+            tello.land()
+        case 7: 
+            tello.go_xyz_speed(0, -50, 0, 50)
+            tello.go_xyz_speed(-100, 50, 0, 50)
+        case 8:
+            tello.curve_xyz_speed(-50, 50, 0, -100, 0, 0, 50)
+            tello.curve_xyz_speed(-50, -50, 0, -100, 0, 0, 50)
+            tello.curve_xyz_speed(50, 50, 0, 100, 0, 0, 50)
+            tello.curve_xyz_speed(50, -50, 0, 100, 0, 0, 50)
+        case 9:
+            tello.curve_xyz_speed(-50, 50, 0, -100, 0, 0, 50)
+            tello.curve_xyz_speed(50, -50, 0, 100, 0, 0, 50)
+            tello.curve_xyz_speed(-100, -100, 0, -200, 0, 0, 50)
+    #hover(tello, 6)
+    '''
+
+
+
+    cv2.imshow('Frame', frame)
+
+    key = cv2.waitKey(1) & 0xFF
+
+    if key == ord('q'):
+        break
+
+
+tello.streamoff()
+cv2.destroyAllWindows()

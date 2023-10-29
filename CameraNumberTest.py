@@ -15,7 +15,7 @@ tello.connect()
 tello.streamon()
 """
 
-model = keras.models.load_model("NewFile2.h5")
+model = keras.models.load_model("IanIsTheBest.h5")
 model.summary()
 
 window = "stream"
@@ -27,8 +27,8 @@ window = "stream"
 
 #imageList = ["img_five.JPG", "img_four.JPG", "img_one.JPG", "img_three.JPG", "img_two.JPG"]
 
-true_image = cv2.imread("HandWrittenDigits/img_one.JPG")
-true_image = cv2.cvtColor( true_image, cv2.COLOR_BGR2GRAY)
+true_image = cv2.imread("HandWrittenDigits/5.png")
+true_image = cv2.cvtColor(true_image, cv2.COLOR_BGR2GRAY)
 
 """
 ## max contrast 
@@ -50,7 +50,7 @@ scaleAbs = cv2.convertScaleAbs(true_image, contrast, brightness)
 #number_arr = np.asarray(tello_image) 
 
 #img_resized = imutils.resize(scaleAbs, height = 28, width = 28)
-img_resized = cv2.resize(scaleAbs, (28*28))
+img_resized = cv2.resize(scaleAbs, (28,28))  
 
 # change brightness
 for row in range(len(img_resized)):
@@ -69,15 +69,17 @@ img_resized = img_resized[0 : 28, center-14 : center+14]
 print(img_resized.shape)
 
 # set breakpoint - debugger
-flatImg = img_resized.reshape((1, 784))
+'''flatImg = img_resized.reshape((1, 784))
 
 print(flatImg)
+print(flatImg.shape)'''
 
-print(flatImg.shape)
+img_resized = img_resized.reshape((1, 28, 28, 1))
 
-model.predict(
-    img_resized
-)
+prediction = model.predict(img_resized)
+predicted_digit = np.argmax(prediction) 
+
+print(f"Predicted Digit: {predicted_digit}")
 
 # hand draw 5 number
 # save them into project file
