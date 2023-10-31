@@ -1,9 +1,9 @@
 from ultralytics import YOLO
 
-model = YOLO("/Users/ioliva/Tello/Tello2023/src/ODCL/runs/detect/train2/weights/last.pt")
+model = YOLO("yolov8m.pt")
 
 # Train the model using the 'coco128.yaml' dataset for 3 epochs
-results = model.train(data="/Users/ioliva/Downloads/tennisball.v1i.yolov8/data.yaml", epochs=50, resume=True)
+results = model.train(data="/home/cyber/Downloads/tennisBalls/data.yaml", epochs=50)
 
 # Evaluate the model's performance on the validation set
 results = model.val()
