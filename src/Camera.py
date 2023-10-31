@@ -7,11 +7,9 @@ tello.connect()
 
 tello.streamon()
 
+tello.takeoff()
 
 window = "stream"
-
-starting_image = cv2.imread("/Users/ioliva/Tello/Tello2023/picture.png")
-cv2.imshow(window, starting_image)
 
 while True:
     try:
@@ -21,5 +19,6 @@ while True:
         cv2.waitKey(1)
     except KeyboardInterrupt:
         tello.streamoff()
+        tello.land()
         print("terminating...")
         break
