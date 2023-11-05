@@ -2,6 +2,7 @@ from djitellopy import tello, Tello
 import cv2
 from imutils import resize
 from random import randint
+from Utils.Hover import hover
 
 tello = Tello()
 
@@ -18,7 +19,6 @@ max_hsv = (100, 255, 255)
 
 while True:
     try:
-        tello.send_keepalive()
 
         tello_image = tello.get_frame_read().frame
         tello_image = resize(tello_image, width=600)
@@ -29,11 +29,18 @@ while True:
         green = cv2.inRange(tello_image, (0, 110, 0), (90, 255, 170))
         red = cv2.inRange(tello_image, (110, 0, 0), (255, 60, 120))
 
-        cv2.imshow("red", red)
-        cv2.imshow("green", green)
-        cv2.imshow("blue", blue)
+
+        true_display = resize(true_image, width=200)
+        blue_display = resize(blue, width=200)
+        green_display = resize(green, width=200)
+        red_display = resize(red, width=200)
+
+
+        cv2.imshow("red", red_display)
+        cv2.imshow("green", green_display)
+        cv2.imshow("blue", blue_display)
         
-        cv2.imshow(window, true_image)
+        cv2.imshow(window, true_display)
         cv2.waitKey(1)
 
         thresh = 100
@@ -59,8 +66,16 @@ while True:
                 color = "green"
             else:
                 color = "blue"
+
+            hover(tello, 10)
+            print()
+            print("Color detected: " + color)
+            tello.streamoff()
+            tello.land()
+            break
         else:
             color = "none"
+            tello.send_keepalive()
         
         print(color, end="   \r")
 
@@ -71,3 +86,6 @@ while True:
         tello.land()
         print("terminating...")
         break
+
+tello.streamoff()
+tello.land()
