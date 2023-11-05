@@ -7,7 +7,7 @@ tello.connect()
 
 tello.streamon()
 
-#tello.takeoff()
+tello.takeoff()
 
 window = "stream"
 

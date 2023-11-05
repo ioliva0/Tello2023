@@ -1,51 +1,52 @@
-from djitellopy import tello, Tello
+print("importing")
 import cv2 
-import os
 import numpy as np
+from tensorflow import keras
+from imutils import resize
+print("imports complete")
 
-tello = Tello()
-
-tello.connect()
-
-tello.streamon()
-
+model = keras.models.load_model("IanIsTheBest.h5")
+model.summary()
 
 window = "stream"
 
-#starting_image = cv2.imread("/Users/jwang/Tello/Tello2023/picture.png")
-#cv2.imshow(window, starting_image)
+def predict(num):
+    path = "HandWrittenDigits/" + str(num) + ".png"
+    print("Prediction for file at " + path)
+    image = cv2.imread(path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-while True:
-    try:
-        tello_image = tello.get_frame_read().frame
-        true_image = cv2.cvtColor(tello_image, cv2.COLOR_BGR2GRAY)
+    resized = resize(image, height=28)
+    #crop image to 28x28
 
-        """
-        ## max contrast 
-        # read the input image
-        # changed from 'frame2' to frame
-        vid = cv2.imread('frame')
-        """
+    if len(resized[0]) < 28:
+        resized = resize(image, width=28)
 
-        # define the alpha and beta
-        contrast = 17 # Contrast control (0~127)
-        brightness = 1 # Brightness control (0~100)
+    center_col = int(len(resized[0])/2)
+    center_row = int(len(resized)/2)
 
-        # call convertScaleAbs function
-        scaleAbs = cv2.convertScaleAbs(true_image, contrast, brightness)
+    image = resized[center_row-14 : center_row+14, center_col-14 : center_col+14] 
 
-        # display the output image
-        cv2.imshow('adjusted', scaleAbs)
+    # change brightness
+    for row in range(len(image)):
+        for column in range(len(image[row])):
+            if image[row][column] > 130: 
+                image[row][column] = 0
+            else: 
+                image[row][column] = 255
 
-        ## 28x28
-        #number_arr = np.asarray(tello_image) 
+    image = image.reshape((1, 28, 28, 1))
 
-        img_resized = cv2.resize(scaleAbs, (28,28))
+    prediction = model.predict(image)
+    #print("confidences: " + str(prediction))
+    predicted_digit = np.argmax(prediction) 
 
-        cv2.imshow(window, img_resized)
-        cv2.waitKey(1)
-    except KeyboardInterrupt:
-        tello.streamoff()            
-        print("terminating...")
-        break
+    print(f"Predicted Digit: {predicted_digit}")
 
+#chosen number images
+nums = [0, 2, 3, 4, 6, 7, 9]
+
+for num in nums:
+    print("Actual Digit: " + str(num))
+    predict(num)
+    print("_________________________________________________________________")

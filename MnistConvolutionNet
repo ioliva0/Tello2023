@@ -1,0 +1,79 @@
+## training MNIST Conv Net
+
+# example of loading the mnist dataset
+import tensorflow_datasets as tfds
+from matplotlib import pyplot as plt
+import tensorflow as tf
+
+
+# load dataset
+(train, test), info = tfds.load('mnist', split=['train', 'test'], shuffle_files=True, as_supervised=True, with_info=True)
+
+
+# build training pipeline
+def normalize_img(image, label):
+  """Normalizes images: `uint8` -> `float32`."""
+  return tf.cast(image, tf.float32) / 255., label
+
+train = train.map(
+    normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
+train = train.cache()
+train = train.shuffle(info.splits['train'].num_examples)
+train = train.batch(128)
+train = train.prefetch(tf.data.AUTOTUNE)
+
+# build an evolution pipeline 
+test = test.map(
+    normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
+test = test.batch(128)
+test = test.cache()
+test = test.prefetch(tf.data.AUTOTUNE)
+
+# create and train the model 
+model = tf.keras.models.Sequential([
+  tf.keras.layers.Flatten(input_shape=(28, 28)),
+  tf.keras.layers.Dense(128, activation='relu'), #input_shape=(28, 28, 1)),
+  tf.keras.layers.Dense(10)#, input_shape=(28, 28, 1))
+])
+
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(0.001),
+    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
+)
+
+model.fit(
+    train,
+    epochs=6,
+    validation_data=test,
+)
+
+# Save the weights
+model.save("IanIsTheBest.h5")
+
+# predict with numbers we have
+# 
+
+'''## load Camera image into ConvNet 
+## Implementing 2D convolution to the captured frame
+
+# Reshaping frame to get following: (batch size, rows, columns, channels)
+x_input_GRAY = frame_GRAY.reshape(1, h, w, 1).astype(np.float32)
+
+# Passing GRAY input to the initialized Conv2D layer
+# Calculating time spent for 2D convolution
+start = timer()
+output = layer(x_input_GRAY)
+end = timer()
+
+# Slicing from the output just feature map
+# Converting output Tensor into Numpy array
+output = np.array(output[0, :, :, 0])
+
+# To exclude values that are less than 0 and more than 255,
+# Numpy function 'clip' is applied
+# It keeps values of Numpy array in the given range
+# And it replaces non-needed values with boundary numbers
+output = np.clip(output, 0, 255).astype(np.uint8)'''
+
+# training dataset, not only from MNIST dataset, train with 30, validate with 30, might have to retrain, run over the same dataset
