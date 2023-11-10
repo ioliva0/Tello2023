@@ -1,0 +1,42 @@
+#from ultralytics import YOLO
+import ultralytics
+#from djitellopy import tello, Tello
+import cv2
+
+# Load a model
+model = YOLO('src/ODCL/Trained/number.onnx')
+
+"""
+tello = Tello()
+
+tello.connect()
+
+tello.streamon()
+
+tello.takeoff()
+"""
+
+window = "stream"
+
+cap = cv2.VideoCapture(0)
+
+while True:
+    try:
+        #tello_image = tello.get_frame_read().frame
+        #true_image = cv2.cvtColor(tello_image, cv2.COLOR_BGR2RGB)
+        ret, true_image = cap.read()
+        results = model(true_image = 1, show = True, conf = 0.4, save = True)
+        cv2.imshow(window, true_image)
+        cv2.waitKey(1)
+        result = model(true_image)
+        print(result)
+    except KeyboardInterrupt:
+        #tello.streamoff()
+        #tello.land()
+        print("terminating...")
+        break
+
+
+## detection in yolov8 - get prediction, print ressult from prediction 
+# run inference on source
+#results = model(source = 1, show = True, conf = 0.4, save = True)
