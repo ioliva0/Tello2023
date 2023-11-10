@@ -15,7 +15,7 @@ arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 arucoParams = cv2.aruco.DetectorParameters()
 arucoDetector = cv2.aruco.ArucoDetector(arucoDict, arucoParams)
 
-target = 3
+target = 4
 
 def move_to_tag():
     tello.send_keepalive()
@@ -24,7 +24,7 @@ def move_to_tag():
     tello_image = resize(tello_image, width=600)
     true_image = cv2.cvtColor(tello_image, cv2.COLOR_BGR2RGB)
 
-    tolerance = 100
+    tolerance = 50
 
     corners, ids, rejected = arucoDetector.detectMarkers(true_image)
 
@@ -48,13 +48,13 @@ def move_to_tag():
         
         if avg_x < 300 - tolerance:
             print("left, " + str(avg_x), end="  \r")
-            tello.move_left(20)
+            tello.move_left(30)
         elif avg_x > 300 + tolerance:
             print("right, " + str(avg_x), end="  \r")
-            tello.move_right(20)
+            tello.move_right(30)
         else:
             print("center, " + str(avg_x), end="  \r")
-            tello.move_forward(40)
+            tello.move_forward(100)
             return 0
 
     print("target not in view")
@@ -65,7 +65,7 @@ while True:
     try:
         if move_to_tag() == 0: 
             break
-
+        """
         key = cv2.waitKey(100)
         if key == ord("1"):
             print("switching to target 1")
@@ -76,6 +76,7 @@ while True:
         elif key == ord("3"):
             print("switching to target 3")
             target = 3
+        """
     except KeyboardInterrupt:
         break
 

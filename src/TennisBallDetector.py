@@ -10,8 +10,7 @@ tello.streamon()
 
 window = "stream"
 
-starting_image = cv2.imread("/Users/ioliva/Tello/Tello2023/picture.png")
-cv2.imshow(window, starting_image)
+cv2.namedWindow(window)
 
 min_hsv = (70, 120, 50)
 max_hsv = (100, 255, 255)
