@@ -7,7 +7,8 @@ import json
 
 #"""
 chessboardSize = (9,6)
-frameSize = (1830,1330)
+#frameSize = (1830,1330)
+frameSize = (960, 720)
 
 # termination criteria
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -41,14 +42,14 @@ for image in images:
         corners2 = cv.cornerSubPix(gray, corners, (11,11), (-1,-1), criteria)
         imgpoints.append(corners)
         
-        """
+        
         # Draw and display the corners
         cv.drawChessboardCorners(img, chessboardSize, corners2, ret)
         cv.imshow('img', img)
         cv.waitKey(1000)
 
 cv.destroyAllWindows()
-"""
+
 ############## CALIBRATION #######################################################
 
 ret, cameraMatrix, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, frameSize, None, None)
@@ -61,12 +62,12 @@ tvecs = [tvec.tolist() for tvec in tvecs]
 
 calibration = {
     "Camera Matrix" : cameraMatrix,
-    "Coefficient of Distortion" : dist,
+    "Distortion Coefficients" : dist,
     "Rotation Vectors" : rvecs,
     "Transformation Vectors" : tvecs
 }
 
-with open("Calibration/CalibrationParams.json", 'w') as calibrationFile:
+with open("Calibration/Calibration.json", 'w') as calibrationFile:
     jsonString = json.dump(calibration, calibrationFile, indent=2)
-
     #calibrationFile.write(str(calibration))
+    calibrationFile.close()
