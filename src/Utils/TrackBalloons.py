@@ -1,7 +1,7 @@
 from djitellopy import tello, Tello
 
 from threading import Thread
-from time import time, sleep
+import time
 from random import randint
 
 from numpy import zeros
@@ -9,7 +9,7 @@ import cv2
 
 from json import load
 
-balloons = []
+from math import pi
 
 with open("Calibration/Calibration.json", "r") as calibration_file:
     calibration = load(calibration_file)
@@ -42,7 +42,6 @@ def create_color_dict():
 
 blank_image = zeros([150, 200])
 
-
 for i, color in enumerate(colors):
     cv2.namedWindow(color, cv2.WINDOW_NORMAL)
     cv2.imshow(color, blank_image)
@@ -53,26 +52,28 @@ cv2.namedWindow(main_window, cv2.WINDOW_NORMAL)
 cv2.imshow(main_window, blank_image)
 cv2.moveWindow(main_window, 200, 510)
 
-"""
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-"""
+print("Waiting for cv2 to load...")
+time.sleep(10)
+print("cv2 loading complete (hopefully?)")
 
 # Define the ArUco dictionary
 arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 arucoParams = cv2.aruco.DetectorParameters()
 arucoDetector = cv2.aruco.ArucoDetector(arucoDict, arucoParams)
 
-tag_size_in = 7
+tag_size_in = 3
 #side an int 1 or -1 depending on which side ur looking at
 #1 is right, -1 is left
-def sweep(tello: Tello, start: tuple, direction: tuple, speed: int, side : int):
-    movement = Thread(target=tello.go_xyz_speed, args=[*direction, speed])
+def sweep(tello: Tello, direction: tuple, speed: int, side : int):
+    #movement = Thread(target=tello.go_xyz_speed, args=[*direction, speed])
     
-    movement.start()
-    start_time = time()
+    #movement.start()
 
-    while movement.is_alive():
+    tello.go_xyz_speed(-direction[1],direction[0],direction[2], speed)
+
+    start_time = time.time()
+
+    while abs(tello.get_speed_x() + tello.get_speed_y()) > 1:
         tello_image = tello.get_frame_read().frame
 
         true_image = cv2.cvtColor(tello_image, cv2.COLOR_BGR2RGB)
@@ -90,17 +91,6 @@ def sweep(tello: Tello, start: tuple, direction: tuple, speed: int, side : int):
             mask_display = cv2.resize(mask, (200, 150))
 
             cv2.imshow(color, mask_display)
-            """
-            contours = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
-
-            for contour in contours:
-                (x, y, w, h) = cv2.boundingRect(contour)
-                
-                #downscales x,y,w,h to show on smaller display image
-                (x, y, w, h) = tuple(int(dim / display_downscale) for dim in (x, y, w, h))
-
-                cv2.rectangle(mask_display, (x, y), (x+w, y+h), (0,0,0))
-            """
         
         # Detect ArUco markers in the image
         corners, ids, _ = arucoDetector.detectMarkers(true_image)
@@ -122,7 +112,7 @@ def sweep(tello: Tello, start: tuple, direction: tuple, speed: int, side : int):
                     "Translation_Vectors" : [],
                     "Rotation_Vectors" : [],
                 }
-            balloon_data[id]["Times"].append(time() - start_time)
+            balloon_data[id]["Times"].append(time.time() - start_time)
             balloon_data[id]["Translation_Vectors"].append[trans_vec]
             balloon_data[id]["Rotation_Vectors"].append[rot_vec]
 
@@ -153,7 +143,7 @@ def sweep(tello: Tello, start: tuple, direction: tuple, speed: int, side : int):
     
     sweep_balloons = []
     
-    total_time = time() - start_time
+    total_time = time.time() - start_time
 
     for id in balloon_data:
         balloon = {}
@@ -171,10 +161,10 @@ def sweep(tello: Tello, start: tuple, direction: tuple, speed: int, side : int):
         
         distances = [distance[:2] for distance in distances]
 
-        for i, time in enumerate(balloon_data[id]["Times"]):
-            distance_center = tuple((time / total_time) * coord for coord in  direction)
+        for i, curr_time in enumerate(balloon_data[id]["Times"]):
+            distance_center = tuple((curr_time / total_time) * coord for coord in  direction)
             trans_vec = balloon_data[id]["Translation_Vectors"][i][:2]
-            distance = tuple(side * coord + distance_center[coordInd] for coordInd, coord in enumerate(trans_vec))
+            distance = tuple(coord + distance_center[coordInd] for coordInd, coord in enumerate(trans_vec))
             distances.append(distance)
         
         avg_distance = ()
@@ -197,7 +187,16 @@ def sweep(tello: Tello, start: tuple, direction: tuple, speed: int, side : int):
     ]
     """
 
-    balloons.append[sweep_balloons]
+    return sweep_balloons
+
+def correct_pos(balloons, y, dir):
+    for balloon in balloons:
+        corrected_position = [0,0]
+        corrected_position[0] = balloon["Position"][1] * dir
+        corrected_position[1] = y + balloon["Position"] * dir
+
+    return balloons
+
 
 tello = Tello()
 
@@ -205,32 +204,59 @@ tello.connect()
 tello.streamon()
 
 tello.takeoff()
+tello.move_up(21)
+
+y = 0
+balloons = []
+dir = None
+
+size = 381
+#381
 
 try:
-    tello.move_forward(381)
+    tello.move_forward(size)
     tello.rotate_counter_clockwise(90)
+    y = size
+    dir = -1
 
-    sweep(tello, (-381, 0, 0), (381, 0, 0), 50, -1)
-    sweep(tello, (0, 0, 0), (381, 0, 0), 50, -1)
+    #sweep to the left, downwards from top
+    sweep_balloons = sweep(tello, (size, 0, 0), 50, -1)
+    balloons.extend(correct_pos(sweep_balloons, y, dir))
+    y = 0
+
+    sweep_balloons = sweep(tello, (size, 0, 0), 50, -1)
+    balloons.extend(correct_pos(sweep_balloons, y, dir))
     tello.rotate_counter_clockwise(180)
-    sweep(tello, (381, 0, 0), (-381, 0, 0), 50, 1)
-    sweep(tello, (0, 0, 0), (-381, 0, 0), 50, 1)
+    y = -size
+    dir = 1
 
-    tello.move_right(381)
+    #sweep to the right, upwards from bottom
+    sweep_balloons = sweep(tello, (size, 0, 0), 50, 1)
+    balloons.extend(correct_pos(sweep_balloons, y, dir))
+    y = 0
+
+    sweep_balloons = sweep(tello, (size, 0, 0), 50, 1)
+    balloons.extend(correct_pos(sweep_balloons, y, dir))
+
+    tello.go_xyz_speed(0,-size,0,50)
     tello.rotate_counter_clockwise(90)
 
     target_tag = 1
     target_color = "red"
-    for balloon in balloons:
-        if balloon["ID"] == target_tag and balloon["Color"] == target_color:
-            tello.move_right(balloon["Distance"][0])
-            tello.move_forward(balloon("Distance")[1])
-            tello.move_back(50)
-            break
-            
-    tello.streamoff()
-    tello.land()
+
+    print(balloons)
+
+    if len(balloons) > 0:
+        for balloon in balloons:
+            if balloon["ID"] == target_tag and balloon["Color"] == target_color:
+                tello.move_right(balloon["Distance"][0])
+                tello.move_forward(balloon("Distance")[1])
+                tello.move_back(50)
+                break
 except Exception as e:
     tello.streamoff()
     tello.land()
     raise e
+
+tello.streamoff()
+tello.land()

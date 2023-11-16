@@ -1,5 +1,6 @@
 from djitellopy import tello, Tello
 import cv2
+from time import sleep
 
 tello = Tello()
 
@@ -8,6 +9,11 @@ tello.connect()
 tello.streamon()
 
 tello.takeoff()
+
+sleep(2)
+
+tello.move_up(40)
+
 
 window = "stream"
 

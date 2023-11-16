@@ -11,7 +11,7 @@ print(str(tello.get_battery()) + "% Battery")
 try:
     print("taking off")
     tello.takeoff()    
-
+    
     hover(tello, 15)
 
     tello.land()
