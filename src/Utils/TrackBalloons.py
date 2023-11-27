@@ -17,6 +17,8 @@ with open("Calibration/Calibration.json", "r") as calibration_file:
 distortion_coefficients = calibration["Distortion Coefficients"]
 camera_matrix = calibration["Camera Matrix"]
 
+target_color = input("Target color: ")
+target_tag = input("Target ID: ")
 
 display_downscale = 150/720
 
@@ -24,14 +26,14 @@ balloon_data = {}
 
 colors = {
     "red" : ((161, 0, 43), (255, 72, 113)),
-    "pink" : ((182, 121, 157), (212, 173, 211)),
-    "orange" : ((182, 55, 0), (255, 147, 62)),
-    "yellow" : ((169, 87, 0), (236, 255, 15)),
+    "pink" : ((216, 131, 173), (255, 173, 209)),
+    "orange" : ((138, 15, 0), (214, 65, 13)),
+    "yellow" : ((167, 122, 0), (201, 161, 49)),
     "dark_green" : ((17, 117, 0), (43, 169, 69)),
     "light_green" : ((88, 174, 74), (116, 255, 170)),
-    "purple" : ((102, 78, 150), (186, 122, 203)),
+    "purple" : ((55, 17, 74), (85, 66, 123)),
     "dark_blue" : ((14, 74, 117), (59, 115, 171)),
-    "light_blue" : ((67, 132, 129), (99, 153, 175))
+    "light_blue" : ((76, 117, 180), (158, 187, 225))
 }
 
 def create_color_dict():
@@ -53,7 +55,8 @@ cv2.imshow(main_window, blank_image)
 cv2.moveWindow(main_window, 200, 510)
 
 print("Waiting for cv2 to load...")
-time.sleep(10)
+print("Press any key in a python window once they pop up to continue")
+cv2.waitKey(0)
 print("cv2 loading complete (hopefully?)")
 
 # Define the ArUco dictionary
@@ -65,18 +68,21 @@ tag_size_in = 3
 #side an int 1 or -1 depending on which side ur looking at
 #1 is right, -1 is left
 def sweep(tello: Tello, direction: tuple, speed: int, side : int):
-    #movement = Thread(target=tello.go_xyz_speed, args=[*direction, speed])
     
-    #movement.start()
-
-    tello.go_xyz_speed(-direction[1],direction[0],direction[2], speed)
-
+    movement = Thread(target=tello.go_xyz_speed, args=[-direction[1],direction[0],direction[2], speed])
+    movement.daemon = True
+    movement.start()
+    
     start_time = time.time()
 
     while abs(tello.get_speed_x() + tello.get_speed_y()) > 1:
         tello_image = tello.get_frame_read().frame
 
         true_image = cv2.cvtColor(tello_image, cv2.COLOR_BGR2RGB)
+
+        true_image_display = cv2.resize(true_image, (200, 150))
+
+        cv2.imshow(main_window, true_image_display)
 
         masks = {}
 
@@ -153,7 +159,7 @@ def sweep(tello: Tello, direction: tuple, speed: int, side : int):
         max_color = ""
         max_confidence = 0
         for color in balloon_data[id]["Color_Confidences"]:
-            if balloon_data[id]["Color_Confidences"][color] > max_confidence:
+            if balloon_data[id]["Color_Confidences"][color] >= max_confidence:
                 max_confidence = balloon_data[id]["Color_Confidences"][color]
                 max_color = color
         
@@ -176,7 +182,7 @@ def sweep(tello: Tello, direction: tuple, speed: int, side : int):
         balloon["Distance"] = avg_distance
 
         sweep_balloons.append(balloon)
-
+    
     """
     [
         {
@@ -187,7 +193,8 @@ def sweep(tello: Tello, direction: tuple, speed: int, side : int):
     ]
     """
 
-    return sweep_balloons
+    #return sweep_balloons
+    return []
 
 def correct_pos(balloons, y, dir):
     for balloon in balloons:
@@ -204,7 +211,10 @@ tello.connect()
 tello.streamon()
 
 tello.takeoff()
-tello.move_up(21)
+
+time.sleep(2)
+
+tello.move_up(40)
 
 y = 0
 balloons = []
@@ -240,9 +250,6 @@ try:
 
     tello.go_xyz_speed(0,-size,0,50)
     tello.rotate_counter_clockwise(90)
-
-    target_tag = 1
-    target_color = "red"
 
     print(balloons)
 
