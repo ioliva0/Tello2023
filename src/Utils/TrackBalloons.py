@@ -119,8 +119,8 @@ def sweep(tello: Tello, direction: tuple, speed: int, side : int):
                     "Rotation_Vectors" : [],
                 }
             balloon_data[id]["Times"].append(time.time() - start_time)
-            balloon_data[id]["Translation_Vectors"].append[trans_vec]
-            balloon_data[id]["Rotation_Vectors"].append[rot_vec]
+            balloon_data[id]["Translation_Vectors"].append(trans_vec)
+            balloon_data[id]["Rotation_Vectors"].append(rot_vec)
 
             x_vals = []
             y_vals = []
@@ -163,8 +163,9 @@ def sweep(tello: Tello, direction: tuple, speed: int, side : int):
                 max_confidence = balloon_data[id]["Color_Confidences"][color]
                 max_color = color
         
-        balloon["Color"] = color
+        balloon["Color"] = max_color
         
+        distances = []
         distances = [distance[:2] for distance in distances]
 
         for i, curr_time in enumerate(balloon_data[id]["Times"]):
@@ -173,7 +174,7 @@ def sweep(tello: Tello, direction: tuple, speed: int, side : int):
             distance = tuple(coord + distance_center[coordInd] for coordInd, coord in enumerate(trans_vec))
             distances.append(distance)
         
-        avg_distance = ()
+        avg_distance = [0,0]
 
         for distance in distances:
             for coordInd in range(len(distance)):
@@ -200,7 +201,7 @@ def correct_pos(balloons, y, dir):
     for balloon in balloons:
         corrected_position = [0,0]
         corrected_position[0] = balloon["Position"][1] * dir
-        corrected_position[1] = y + balloon["Position"] * dir
+        corrected_position[1] = y + balloon["Position"][1] * dir
 
     return balloons
 
@@ -257,7 +258,7 @@ try:
         for balloon in balloons:
             if balloon["ID"] == target_tag and balloon["Color"] == target_color:
                 tello.move_right(balloon["Distance"][0])
-                tello.move_forward(balloon("Distance")[1])
+                tello.move_forward(balloon["Distance"][1])
                 tello.move_back(50)
                 break
 except Exception as e:
