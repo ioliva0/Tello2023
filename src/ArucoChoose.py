@@ -65,18 +65,6 @@ while True:
     try:
         if move_to_tag() == 0: 
             break
-        """
-        key = cv2.waitKey(100)
-        if key == ord("1"):
-            print("switching to target 1")
-            target = 1
-        elif key == ord("2"):
-            print("switching to target 2")
-            target = 2
-        elif key == ord("3"):
-            print("switching to target 3")
-            target = 3
-        """
     except KeyboardInterrupt:
         break
 
