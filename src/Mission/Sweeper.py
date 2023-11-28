@@ -1,3 +1,7 @@
+if __name__ == "__main__":
+    print("Error: This script is not a standalone; please run Main.py")
+    exit()
+
 import time
 
 from djitellopy import Tello
@@ -6,13 +10,20 @@ import cv2
 import Data_Parser
 import Determiner
 import Consts
+import Config
 tello = Consts.tello
 
 def step(step_size: int):
+
+    Consts.current_y += (Consts.current_dir * step_size)
+    print("field Y: " + str(Consts.current_y))
+
+    if not Config.true_movement:
+        time.sleep(0.05)
+        return
+
     #move to next step alongside line
     tello.move_left(step_size)
-    Consts.current_y += (Consts.current_dir * step_size)
-    print("Current field Y: " + Consts.current_y)
 
 def sweep(length: int = Consts.size, step_size: int =20):
     dist_remain = length
@@ -28,8 +39,9 @@ def sweep(length: int = Consts.size, step_size: int =20):
         true_image = cv2.cvtColor(tello_image, cv2.COLOR_BGR2RGB)
 
         #downscale and display the RGB image
-        true_image_display = cv2.resize(true_image, (200, 150))
+        true_image_display = cv2.resize(true_image, [200, 150])
         cv2.imshow(Consts.main_window, true_image_display)
+        print(true_image_display[0][0])
 
         #dict of images (numpy arrays) to be treated as booleans at each pixel
         #indexed by color
@@ -50,7 +62,7 @@ def sweep(length: int = Consts.size, step_size: int =20):
             masks[color] = mask
 
             #downscale and show each mask in its respective color window
-            mask_display = cv2.resize(mask, (200, 150))
+            mask_display = cv2.resize(mask, [200, 150])
             cv2.imshow(color, mask_display)
         
         # Detect ArUco markers in the image
@@ -60,11 +72,11 @@ def sweep(length: int = Consts.size, step_size: int =20):
         if ids is None:
             continue
         
-        for i, id in enumerate(ids):
-            balloon_data = Data_Parser.get_balloon_data(balloon_data, id, corners[id][0], masks)
+        for id in ids:
+            Data_Parser.get_balloon_data(id, corners[id][0], masks)
 
     if dist_remain > 20:
         step(dist_remain)
 
-    for id in balloon_data:
+    for id in Consts.balloon_data:
         Determiner.determine_balloon(id)

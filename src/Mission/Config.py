@@ -1,4 +1,4 @@
 true_movement = False
 takeoff = False
-target = True
+target = False
 field_scale = 1

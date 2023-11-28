@@ -1,3 +1,7 @@
+if __name__ == "__main__":
+    print("Error: This script is not a standalone; please run Main.py")
+    exit()
+
 from json import load
 
 def load_calibration():

@@ -7,18 +7,15 @@ import Consts
 import Initializer
 from Sweeper import sweep
 
+Initializer.initialize_tello()
+
 Initializer.initialize_cv2()
 
+Initializer.takeoff()
+
+exit()
+
 tello = Consts.tello
-
-tello.connect()
-tello.streamon()
-
-tello.takeoff()
-
-time.sleep(2)
-
-tello.move_up(40)
 
 y = 0
 dir = None
@@ -35,18 +32,22 @@ def pop_target():
     
     for balloon in Consts.balloons:
         if balloon["ID"] == Consts.target_tag and balloon["Color"] == Consts.target_color:
-            tello.move_right(balloon["Position"][0])
-            tello.move_forward(balloon["Position"][1])
-            tello.move_back(50)
+            if Config.true_movement:
+                tello.move_right(balloon["Position"][0])
+                tello.move_forward(balloon["Position"][1])
+                tello.move_back(50)
             print("Balloon (theoretically) popped")
             return True
     
     print("Balloon not found in balloon list")
-
+    return False
 
 try:
-    tello.move_forward(Consts.size)
-    tello.rotate_counter_clockwise(90)
+    if Config.true_movement:
+        tello.move_forward(Consts.size)
+        tello.rotate_counter_clockwise(90)
+    else:
+        print("True movement disabled, faking movement with sleep statements")
 
     Consts.current_y = Consts.size
     Consts.current_dir = -1
@@ -60,15 +61,22 @@ try:
     sweep_balloons = sweep()
     sweep_balloons = sweep()
 
-    tello.rotate_counter_clockwise(90)
-    tello.move_back(Consts.current_y)
+    if Config.true_movement:
+        tello.rotate_counter_clockwise(90)
+        tello.move_back(Consts.current_y)
     Consts.current_y = 0
 
     print(Consts.balloons)
+
+    pop_target()
+
 except Exception as e:
     tello.streamoff()
-    tello.land()
+    if Config.takeoff:
+        tello.land()
     raise e
 
 tello.streamoff()
-tello.land()
+
+if Config.takeoff:
+    tello.land()

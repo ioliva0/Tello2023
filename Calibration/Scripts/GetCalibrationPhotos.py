@@ -16,10 +16,13 @@ while True:
         tello.send_keepalive()
 
         tello_image = tello.get_frame_read().frame
+        #tello_image = cv2.resize(tello_image, [200, 150])
         true_image = cv2.cvtColor(tello_image, cv2.COLOR_BGR2GRAY)
 
+        
+
         cv2.imshow(window, true_image)
-        if cv2.waitKey(10) == ord("x"):
+        if cv2.waitKey(100) == ord("x"):
             cv2.imwrite("Calibration/Images/Calibration" + str(image_num) + ".png", true_image)
             print("Image " + str(image_num) + " written successfully")
             image_num += 1
