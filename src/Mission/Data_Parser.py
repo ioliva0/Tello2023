@@ -29,6 +29,9 @@ def estimatePoseSingleMarkers(corners, marker_size, mtx, distortion):
                               [-marker_size / 2, -marker_size / 2, 0]], dtype=numpy.float32)
     
     _, _, translation_vector = cv2.solvePnP(marker_points, corners, mtx, distortion, False, cv2.SOLVEPNP_IPPE_SQUARE)
+
+    translation_vector = (translation_vector[0][0], translation_vector[1][0])
+
     return translation_vector
 
 def get_balloon_data(id, corners, masks):
@@ -78,11 +81,6 @@ def get_balloon_data(id, corners, masks):
     range_x = int(max(x_vals) - min(x_vals))
     range_y = int(max(y_vals) - min(y_vals))
 
-    #create a "confidence score" based on how many random samples
-    #within double the aruco tag's bounding box (the estimated bounding box of the balloon)
-    #and add each confidence to a dictionary, indexed by the color's name
-    confidences = Colors.create_color_dict()
-
     num_samples = 1000
     for sample in range(num_samples):
         sample_x = max(min(randint(avg_x - range_x, avg_x + range_x), 959), 0)
@@ -91,5 +89,4 @@ def get_balloon_data(id, corners, masks):
         #adds the pixel value of the mask at the sample to the confidence score
         #this works becuase positive detections are white (255) and negative detections are black (0)
         for color in masks:
-            confidences[color] += masks[color][sample_y][sample_x]
-            Consts.balloon_data[key]["Color_Confidences"][color] += confidences[color]
+            Consts.balloon_data[key]["Color_Confidences"][color] += int(masks[color][sample_y][sample_x] / 255)

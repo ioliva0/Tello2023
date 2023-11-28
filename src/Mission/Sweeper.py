@@ -72,6 +72,3 @@ def sweep(length: int = Consts.size, step_size: int =20):
 
     if dist_remain > 20:
         step(dist_remain)
-
-    for id in Consts.balloon_data:
-        Determiner.determine_balloon(id)

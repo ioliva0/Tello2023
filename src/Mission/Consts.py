@@ -11,10 +11,6 @@ main_window = "stream"
 
 import Load_Handler
 calibration = Load_Handler.load_calibration()
-print(*calibration)
-
-for matrix in calibration:
-    print(type(matrix))
 
 tag_size_in = 3
 

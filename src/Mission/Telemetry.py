@@ -28,3 +28,15 @@ def show_all_images():
     show_masks()
 
     #cv2.waitKey(0)
+
+from json import dump
+
+def output_results():
+
+    with open("./src/Mission/Output/Mission.json", "w") as mission:
+        dump(Consts.balloons, mission, indent=4)
+        mission.close()
+    
+    with open("./src/Mission/Output/Raw.json", "w") as raw:
+        dump(Consts.balloon_data, raw, indent=4)
+        raw.close()

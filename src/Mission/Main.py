@@ -2,6 +2,8 @@
 import Config
 import Consts
 import Initializer
+import Telemetry
+import Determiner
 from Sweeper import sweep
 
 Initializer.initialize_tello()
@@ -65,6 +67,9 @@ try:
     print(Consts.balloons)
 
     pop_target()
+
+    Determiner.determine_results()
+    Telemetry.output_results()
 
 except Exception as e:
     tello.streamoff()

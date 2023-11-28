@@ -4,10 +4,7 @@ if __name__ == "__main__":
 
 import Consts
 
-def determine_color(id):
-
-    key = str(id)
-
+def determine_color(key):
     max_color = ""
     max_confidence = 0
     for color in Consts.balloon_data[key]["Color_Confidences"]:
@@ -16,9 +13,7 @@ def determine_color(id):
             max_color = color
     return max_color
 
-def determine_position(id):
-    key = str(id)
-    
+def determine_position(key):    
     positions = []
 
     for i in range(len(Consts.balloon_data[key]["Y_Values"])):
@@ -39,11 +34,20 @@ def determine_position(id):
     return avg_position
     
 def determine_balloon(id):
+
+    key = str(id)
+
+    print("Determining balloon of tag " + key)
+
     balloon = {}
     balloon["ID"] = id
 
-    balloon["Color"] = determine_color(id)
+    balloon["Color"] = determine_color(key)
     
-    balloon["Position"] = determine_position(id)
+    balloon["Position"] = determine_position(key)
 
     Consts.balloons.append(balloon)
+
+def determine_results():
+    for id in Consts.balloon_data:
+        determine_balloon(id)
