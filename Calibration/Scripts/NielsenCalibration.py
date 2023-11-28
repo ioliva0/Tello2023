@@ -6,7 +6,7 @@ import json
 ################ FIND CHESSBOARD CORNERS - OBJECT POINTS AND IMAGE POINTS #############################
 
 #"""
-chessboardSize = (9,6)
+chessboardSize = (7, 7)
 #frameSize = (1830,1330)
 frameSize = (960, 720)
 
@@ -37,6 +37,8 @@ for image in images:
 
     # If found, add object points, image points (after refining them)
     if ret == True:
+
+        print("hi")
 
         objpoints.append(objp)
         corners2 = cv.cornerSubPix(gray, corners, (11,11), (-1,-1), criteria)
