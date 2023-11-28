@@ -54,6 +54,9 @@ try:
     sweep_balloons = sweep()
     Consts.current_dir = 1
 
+    if Config.true_movement:
+        tello.rotate_counter_clockwise(180)
+
     #sweep to the right, upwards from bottom
     sweep_balloons = sweep()
     sweep_balloons = sweep()

@@ -4,11 +4,22 @@ if __name__ == "__main__":
 
 import Consts
 
+from statistics import median
+
 def determine_color(key):
     max_color = ""
     max_confidence = 0
+
+    median_hue_score = median(Consts.balloon_data[key]["Hue_Scores"])
+
     for color in Consts.balloon_data[key]["Color_Confidences"]:
-        if Consts.balloon_data[key]["Color_Confidences"][color] >= max_confidence:
+        
+        color_hue_score = abs(median_hue_score - Consts.hues[color])
+
+        hue_confidence = min(200, 3000 / (color_hue_score ** 3)) / 2
+        rgb_confidence = Consts.balloon_data[key]["Color_Confidences"][color]
+
+        if rgb_confidence + hue_confidence >= max_confidence:
             max_confidence = Consts.balloon_data[key]["Color_Confidences"][color]
             max_color = color
     return max_color

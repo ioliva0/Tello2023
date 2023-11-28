@@ -6,7 +6,7 @@ import cv2
 
 import Colors
 
-from random import randint
+from random import randint, choice
 
 import Consts
 
@@ -30,9 +30,19 @@ def estimatePoseSingleMarkers(corners, marker_size, mtx, distortion):
     
     _, _, translation_vector = cv2.solvePnP(marker_points, corners, mtx, distortion, False, cv2.SOLVEPNP_IPPE_SQUARE)
 
-    translation_vector = (translation_vector[0][0], translation_vector[1][0])
+    translation_vector = (translation_vector[0][0], translation_vector[2][0])
 
     return translation_vector
+
+def get_random_sample_ring(midpoint, radius, upper_bound, ring_size = 1.5):
+    if choice([True, False]):
+        sample = randint(midpoint - int(radius / 2 * ring_size), midpoint - int(radius/2)) 
+    else:
+        sample = randint(midpoint + int(radius / 2), midpoint + int(radius / 2 * ring_size)) 
+
+    #sample += randint(0, 1) * int(radius * 3/2)
+    sample = int(max(min(sample, upper_bound - 1), 0))
+    return sample
 
 def get_balloon_data(id, corners, masks):
     #use camera calibration and aruco tag info to get drone's distance to tag
@@ -59,6 +69,7 @@ def get_balloon_data(id, corners, masks):
     if key not in Consts.balloon_data:
         Consts.balloon_data[key] = {
             "Color_Confidences" : Colors.create_color_dict(),
+            "Hue_Scores" : [],
             "Y_Values" : [],
             "Translation_Vectors" : []
         }
@@ -66,6 +77,8 @@ def get_balloon_data(id, corners, masks):
     #this is not yet processed
     Consts.balloon_data[key]["Y_Values"].append(Consts.current_y)
     Consts.balloon_data[key]["Translation_Vectors"].append(trans_vec)
+    
+    hsv_image = cv2.cvtColor(Consts.tello_image, cv2.COLOR_BGR2HSV)
 
     #get the center and length of the aruco tag's bounding box
     x_vals = []
@@ -80,13 +93,32 @@ def get_balloon_data(id, corners, masks):
     #redundant casting, but stops the "compiler" from complaining
     range_x = int(max(x_vals) - min(x_vals))
     range_y = int(max(y_vals) - min(y_vals))
-
+    
     num_samples = 1000
+
+    hsvs = []
     for sample in range(num_samples):
-        sample_x = max(min(randint(avg_x - range_x, avg_x + range_x), 959), 0)
-        sample_y = max(min(randint(avg_y - range_y, avg_y + range_y), 719), 0)
+        
+        #choose a random sample in a ring around the aruco tag, not including the tag itself
+        sample_x = get_random_sample_ring(avg_x, range_x, 960)
+        sample_y = get_random_sample_ring(avg_y, range_y, 720)
 
         #adds the pixel value of the mask at the sample to the confidence score
         #this works becuase positive detections are white (255) and negative detections are black (0)
         for color in masks:
             Consts.balloon_data[key]["Color_Confidences"][color] += int(masks[color][sample_y][sample_x] / 255)
+
+        hsvs.append(hsv_image[sample_y][sample_x].tolist())
+
+    total_weight = 0
+    total_hue = 0
+    for hsv in hsvs:
+        weight = (hsv[1] + hsv[2])
+        total_hue += hsv[0] * weight
+        total_weight += weight
+
+    hue_score = total_hue / total_weight
+
+    Consts.balloon_data[key]["Hue_Scores"].append(hue_score)
+
+    

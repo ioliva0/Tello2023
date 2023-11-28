@@ -29,6 +29,20 @@ colors = {
     "light_blue" : ((76, 117, 180), (158, 187, 225))
 }
 
+
+hues = {
+    "red" : 125,
+    "pink" : 113,
+    "orange" : 110,
+    "yellow" : 86,
+    "dark_green" : 53,
+    "light_green" : 77,
+    "purple" : 130,
+    "dark_blue" : 55, 
+    "light_blue" : 35
+}
+
+
 #dict of images (numpy arrays) to be treated as booleans at each pixel
 #indexed by color
 #white ? black = color detected ? color not detected

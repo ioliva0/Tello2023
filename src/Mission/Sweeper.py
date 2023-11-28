@@ -29,7 +29,7 @@ def step(step_size: int):
     #move to next step alongside line
     tello.move_left(step_size)
 
-def sweep(length: int = Consts.size, step_size: int =20):
+def sweep(length: int = Consts.size, step_size: int =40):
     dist_remain = length
 
     while dist_remain > step_size:
