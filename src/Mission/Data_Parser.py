@@ -10,11 +10,39 @@ from random import randint
 
 import Consts
 
+import numpy
+
+#https://stackoverflow.com/questions/75750177/solve-pnp-or-estimate-pose-single-markers-which-is-better
+def estimatePoseSingleMarkers(corners, marker_size, mtx, distortion):
+    '''
+    This will estimate the rvec and tvec for each of the marker corners detected by:
+       corners, ids, rejectedImgPoints = detector.detectMarkers(image)
+    corners - is an array of detected corners for each detected marker in the image
+    marker_size - is the size of the detected markers
+    mtx - is the camera matrix
+    distortion - is the camera distortion matrix
+    RETURN list of rvecs, tvecs, and trash (so that it corresponds to the old estimatePoseSingleMarkers())
+    '''
+    marker_points = numpy.array([[-marker_size / 2, marker_size / 2, 0],
+                              [marker_size / 2, marker_size / 2, 0],
+                              [marker_size / 2, -marker_size / 2, 0],
+                              [-marker_size / 2, -marker_size / 2, 0]], dtype=numpy.float32)
+    
+    _, _, translation_vector = cv2.solvePnP(marker_points, corners, mtx, distortion, False, cv2.SOLVEPNP_IPPE_SQUARE)
+    return translation_vector
+
 def get_balloon_data(id, corners, masks):
     #use camera calibration and aruco tag info to get drone's distance to tag
     #INCHES, not centimeters
-    rot_vec , trans_vec, _ = cv2.aruco.estimatePoseSingleMarkers(corners, Consts.tag_size_in, *Consts.calibration)
-    print("ID: " + id)
+    print("###########################")
+    print(Consts.calibration[0])
+    print(Consts.calibration[1])
+    print("###########################")
+    trans_vec = estimatePoseSingleMarkers(corners, Consts.tag_size_in, Consts.calibration[0], Consts.calibration[1])
+    
+    key = str(id)
+
+    print("ID: " + key)
     print("Translation vector: " + str(trans_vec))
 
     """
@@ -25,16 +53,16 @@ def get_balloon_data(id, corners, masks):
     this means that multiple balloons with the same tag will be mixed up
     and assumed to be the same tag
     """
-    if Consts.balloon_data[id] is None:
-        Consts.balloon_data[id] = {
+    if key not in Consts.balloon_data:
+        Consts.balloon_data[key] = {
             "Color_Confidences" : Colors.create_color_dict(),
             "Y_Values" : [],
             "Translation_Vectors" : []
         }
     #add current information to balloon data
     #this is not yet processed
-    Consts.balloon_data[id]["Y_Values"].append[Consts.current_y]
-    Consts.balloon_data[id]["Translation_Vectors"].append[trans_vec]
+    Consts.balloon_data[key]["Y_Values"].append(Consts.current_y)
+    Consts.balloon_data[key]["Translation_Vectors"].append(trans_vec)
 
     #get the center and length of the aruco tag's bounding box
     x_vals = []
@@ -43,11 +71,12 @@ def get_balloon_data(id, corners, masks):
         x_vals.append(corner[0])
         y_vals.append(corner[1])
 
-    avg_x = sum(x_vals) / len(x_vals)
-    avg_y = sum(y_vals) / len(y_vals)
+    avg_x = int(sum(x_vals) / len(x_vals))
+    avg_y = int(sum(y_vals) / len(y_vals))
 
-    range_x = max(x_vals) - min(x_vals)
-    range_y = max(y_vals) - min(y_vals)
+    #redundant casting, but stops the "compiler" from complaining
+    range_x = int(max(x_vals) - min(x_vals))
+    range_y = int(max(y_vals) - min(y_vals))
 
     #create a "confidence score" based on how many random samples
     #within double the aruco tag's bounding box (the estimated bounding box of the balloon)
@@ -56,11 +85,11 @@ def get_balloon_data(id, corners, masks):
 
     num_samples = 1000
     for sample in range(num_samples):
-        sample_x = randint(avg_x - range_x, avg_x + range_x)
-        sample_y = randint(avg_y - range_y, avg_y + range_y)
+        sample_x = max(min(randint(avg_x - range_x, avg_x + range_x), 959), 0)
+        sample_y = max(min(randint(avg_y - range_y, avg_y + range_y), 719), 0)
 
         #adds the pixel value of the mask at the sample to the confidence score
         #this works becuase positive detections are white (255) and negative detections are black (0)
         for color in masks:
             confidences[color] += masks[color][sample_y][sample_x]
-            Consts.balloon_data[id]["Color_Confidences"][color] += confidences[color]
+            Consts.balloon_data[key]["Color_Confidences"][color] += confidences[color]

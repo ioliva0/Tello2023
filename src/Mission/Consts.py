@@ -5,22 +5,21 @@ if __name__ == "__main__":
 import Config
 
 print("Initializing constants")
-print("if this happens more than once, something is SERIOUSLY wrong")
+#print("if this happens more than once, something is SERIOUSLY wrong")
 
 main_window = "stream"
 
 import Load_Handler
 calibration = Load_Handler.load_calibration()
+print(*calibration)
+
+for matrix in calibration:
+    print(type(matrix))
 
 tag_size_in = 3
 
 #approximate size of HALF the field in cm, 12.5ft
 size = 381 * Config.field_scale
-
-from cv2 import aruco
-arucoDict = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
-arucoParams = aruco.DetectorParameters()
-arucoDetector = aruco.ArucoDetector(arucoDict, arucoParams)
 
 colors = {
     "red" : ((161, 0, 43), (255, 72, 113)),
@@ -33,6 +32,11 @@ colors = {
     "dark_blue" : ((14, 74, 117), (59, 115, 171)),
     "light_blue" : ((76, 117, 180), (158, 187, 225))
 }
+
+#dict of images (numpy arrays) to be treated as booleans at each pixel
+#indexed by color
+#white ? black = color detected ? color not detected
+masks = {}
 
 #dictionary of all unprocessed balloon data without conclusive results
 
@@ -75,3 +79,5 @@ if Config.target:
 
 from djitellopy import Tello
 tello = Tello()
+
+tello_image = None

@@ -1,7 +1,4 @@
 #Imports
-
-import time
-
 import Config
 import Consts
 import Initializer
@@ -12,8 +9,6 @@ Initializer.initialize_tello()
 Initializer.initialize_cv2()
 
 Initializer.takeoff()
-
-exit()
 
 tello = Consts.tello
 
@@ -66,6 +61,7 @@ try:
         tello.move_back(Consts.current_y)
     Consts.current_y = 0
 
+    print(Consts.balloon_data)
     print(Consts.balloons)
 
     pop_target()

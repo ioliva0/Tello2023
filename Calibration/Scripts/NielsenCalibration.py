@@ -1,3 +1,5 @@
+#created by Nicolai Nielsen https://github.com/niconielsen32/ComputerVision/blob/37b279fa44e28fe3ea859bc8f14f5353a6b93e54/cameraCalibration.py
+
 import numpy as np
 import cv2 as cv
 import glob
@@ -53,6 +55,9 @@ cv.destroyAllWindows()
 ############## CALIBRATION #######################################################
 
 ret, cameraMatrix, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, frameSize, None, None)
+
+print(cameraMatrix)
+print(dist)
 
 cameraMatrix = cameraMatrix.tolist()
 dist = dist.tolist()

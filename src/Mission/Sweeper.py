@@ -11,7 +11,11 @@ import Data_Parser
 import Determiner
 import Consts
 import Config
+import Initializer
+import Telemetry
 tello = Consts.tello
+
+arucoDetector = Initializer.initialize_detector()
 
 def step(step_size: int):
 
@@ -19,7 +23,7 @@ def step(step_size: int):
     print("field Y: " + str(Consts.current_y))
 
     if not Config.true_movement:
-        time.sleep(0.05)
+        time.sleep(0.01)
         return
 
     #move to next step alongside line
@@ -34,19 +38,8 @@ def sweep(length: int = Consts.size, step_size: int =20):
         dist_remain -= step_size
 
         #get the current frame (BGR) from the tello video stream
-        tello_image = tello.get_frame_read().frame
+        Consts.tello_image = tello.get_frame_read().frame
         #convert the current frame to RGB
-        true_image = cv2.cvtColor(tello_image, cv2.COLOR_BGR2RGB)
-
-        #downscale and display the RGB image
-        true_image_display = cv2.resize(true_image, [200, 150])
-        cv2.imshow(Consts.main_window, true_image_display)
-        print(true_image_display[0][0])
-
-        #dict of images (numpy arrays) to be treated as booleans at each pixel
-        #indexed by color
-        #white ? black = color detected ? color not detected
-        masks = {}
 
         for color in Consts.colors:
             """
@@ -54,26 +47,28 @@ def sweep(length: int = Consts.size, step_size: int =20):
             NOTE: may be better to just downscale the image at the beginning
             I'm still a little scared of antialiasing problems
             """
-            mask = cv2.inRange(tello_image, *Consts.colors[color])
+            mask = cv2.inRange(Consts.tello_image, *Consts.colors[color])
             mask = cv2.dilate(mask, None, iterations=5)
             mask = cv2.erode(mask, None, iterations=5)
 
             #add masks to dictionary
-            masks[color] = mask
-
-            #downscale and show each mask in its respective color window
-            mask_display = cv2.resize(mask, [200, 150])
-            cv2.imshow(color, mask_display)
+            Consts.masks[color] = mask
         
+        Telemetry.show_all_images()
+
         # Detect ArUco markers in the image
-        corners, ids, _ = Consts.arucoDetector.detectMarkers(true_image)
+        corners, ids, _ = arucoDetector.detectMarkers(Consts.tello_image)
 
         #stop if image is outputted but no balloons are detected
         if ids is None:
             continue
         
-        for id in ids:
-            Data_Parser.get_balloon_data(id, corners[id][0], masks)
+        ids = [id[0] for id in ids]
+
+        for i, id in enumerate(ids):
+            print(id)
+            print(corners)
+            Data_Parser.get_balloon_data(id, corners[i][0], Consts.masks)
 
     if dist_remain > 20:
         step(dist_remain)
