@@ -17,9 +17,12 @@ def determine_color(key):
         color_hue_score = abs(median_hue_score - Consts.hues[color])
 
         hue_confidence = min(200, 3000 / (color_hue_score ** 3)) / 2
+
+        hue_penalty = 2 ** (1/5 * abs(color_hue_score))
+
         rgb_confidence = Consts.balloon_data[key]["Color_Confidences"][color]
 
-        if rgb_confidence + hue_confidence >= max_confidence:
+        if rgb_confidence + hue_confidence - hue_penalty >= max_confidence:
             max_confidence = Consts.balloon_data[key]["Color_Confidences"][color]
             max_color = color
     return max_color

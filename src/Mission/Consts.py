@@ -13,6 +13,7 @@ import Load_Handler
 calibration = Load_Handler.load_calibration()
 
 tag_size_in = 3
+balloon_radius_in = 4
 
 #approximate size of HALF the field in cm, 12.5ft
 size = 381 * Config.field_scale
@@ -29,17 +30,16 @@ colors = {
     "light_blue" : ((76, 117, 180), (158, 187, 225))
 }
 
-
 hues = {
     "red" : 125,
-    "pink" : 113,
-    "orange" : 110,
-    "yellow" : 86,
+    "pink" : 128, #113
+    "orange" : 112, #110
+    "yellow" : 96, #86
     "dark_green" : 53,
     "light_green" : 77,
-    "purple" : 130,
+    "purple" : 160, #140
     "dark_blue" : 55, 
-    "light_blue" : 35
+    "light_blue" : 48, #35
 }
 
 
