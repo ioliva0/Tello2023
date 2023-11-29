@@ -9,30 +9,7 @@ import Colors
 from random import randint, choice
 
 import Consts
-
-import numpy
-
-#https://stackoverflow.com/questions/75750177/solve-pnp-or-estimate-pose-single-markers-which-is-better
-def estimatePoseSingleMarkers(corners, marker_size, mtx, distortion):
-    '''
-    This will estimate the rvec and tvec for each of the marker corners detected by:
-       corners, ids, rejectedImgPoints = detector.detectMarkers(image)
-    corners - is an array of detected corners for each detected marker in the image
-    marker_size - is the size of the detected markers
-    mtx - is the camera matrix
-    distortion - is the camera distortion matrix
-    RETURN list of rvecs, tvecs, and trash (so that it corresponds to the old estimatePoseSingleMarkers())
-    '''
-    marker_points = numpy.array([[-marker_size / 2, marker_size / 2, 0],
-                              [marker_size / 2, marker_size / 2, 0],
-                              [marker_size / 2, -marker_size / 2, 0],
-                              [-marker_size / 2, -marker_size / 2, 0]], dtype=numpy.float32)
-    
-    _, _, translation_vector = cv2.solvePnP(marker_points, corners, mtx, distortion, False, cv2.SOLVEPNP_IPPE_SQUARE)
-
-    translation_vector = (translation_vector[0][0], translation_vector[2][0])
-
-    return translation_vector
+import Geolocator
 
 def get_random_sample_ring(midpoint, radius, upper_bound, ring_size = 1.5):
     if choice([True, False]):
@@ -45,24 +22,20 @@ def get_random_sample_ring(midpoint, radius, upper_bound, ring_size = 1.5):
     return sample
 
 def get_balloon_data(id, corners, masks):
-    #use camera calibration and aruco tag info to get drone's distance to tag
+    #use camera calibration and aruco tag info to get drone's distance to center of balloon
     #INCHES, not centimeters
-    print("###########################")
-    print(Consts.calibration[0])
-    print(Consts.calibration[1])
-    print("###########################")
-    trans_vec = estimatePoseSingleMarkers(corners, Consts.tag_size_in, Consts.calibration[0], Consts.calibration[1])
-    
+    trans_vec = Geolocator.find_balloon_center(corners)
+
     key = str(id)
 
     print("ID: " + key)
-    print("Translation vector: " + str(trans_vec))
+    #print("Translation vector: " + str(trans_vec))
 
     """
     initialize dictionary and add to balloon_data 
     this includes tag ID and all non-deterministic information about balloon
     NOTE: a fundamental flaw in our code is that it assumes it's unconfident
-    and will not ever use balloon color to determine balloon type
+    and will never use balloon color to determine balloon type
     this means that multiple balloons with the same tag will be mixed up
     and assumed to be the same tag
     """
