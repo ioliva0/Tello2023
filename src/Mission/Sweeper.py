@@ -22,12 +22,11 @@ def step(step_size: int):
     Consts.current_y += (Consts.current_dir * step_size)
     print("field Y: " + str(Consts.current_y))
 
-    if not Config.true_movement:
-        time.sleep(0.01)
-        return
+    time.sleep(0.01)
 
-    #move to next step alongside line
-    tello.move_left(step_size)
+    if Config.true_movement:
+        #move to next step alongside line
+        tello.move_left(step_size)
 
 def sweep(length: int = Consts.size, step_size: int =40):
     dist_remain = length
@@ -39,7 +38,7 @@ def sweep(length: int = Consts.size, step_size: int =40):
 
         #get the current frame (BGR) from the tello video stream
         Consts.tello_image = tello.get_frame_read().frame
-        #convert the current frame to RGB
+        #print(Consts.tello_image)
 
         for color in Consts.colors:
             """

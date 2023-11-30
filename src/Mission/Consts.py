@@ -31,14 +31,14 @@ colors = {
 }
 
 hues = {
-    "red" : 125,
+    "red" : 124, #125
     "pink" : 128, #113
-    "orange" : 112, #110
+    "orange" : 106, #110 112
     "yellow" : 96, #86
-    "dark_green" : 53,
-    "light_green" : 77,
+    "dark_green" : 62, #53
+    "light_green" : 64, #77
     "purple" : 160, #140
-    "dark_blue" : 55, 
+    "dark_blue" : 40, #55 
     "light_blue" : 48, #35
 }
 

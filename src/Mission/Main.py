@@ -61,7 +61,7 @@ try:
     sweep_balloons = sweep()
     sweep_balloons = sweep()
 
-    if Config.true_movement:
+    if Config.target:
         tello.rotate_counter_clockwise(90)
         tello.move_back(Consts.current_y)
     Consts.current_y = 0

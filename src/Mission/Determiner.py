@@ -35,7 +35,11 @@ def determine_position(key):
         sideways_distance = Consts.balloon_data[key]["Translation_Vectors"][i][0] / 12
         forwards_distance = Consts.balloon_data[key]["Translation_Vectors"][i][1] / 12
         drone_y = Consts.balloon_data[key]["Y_Values"][i] / (2.54 * 12)
-        dir = Consts.current_dir
+        dir = Consts.balloon_data[key]["Dir"]
+
+        print(key)
+        print(dir)
+        print(forwards_distance)
 
         positions.append((forwards_distance * dir, drone_y + sideways_distance * -dir))
     

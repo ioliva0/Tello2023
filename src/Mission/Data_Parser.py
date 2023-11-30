@@ -44,7 +44,8 @@ def get_balloon_data(id, corners, masks):
             "Color_Confidences" : Colors.create_color_dict(),
             "Hue_Scores" : [],
             "Y_Values" : [],
-            "Translation_Vectors" : []
+            "Translation_Vectors" : [],
+            "Dir" : Consts.current_dir
         }
     #add current information to balloon data
     #this is not yet processed
